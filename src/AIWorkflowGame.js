@@ -27,7 +27,7 @@ const mongoColors = {
 
 const correctOrder = ['textract', 'comprehend', 'mongodb-vector-search', 'sagemaker', 'polly'];
 
-const AIWorkflowGame = () => {
+const AIWorkflowGame = ({ onReturnToMainMenu }) => {
   const [playerName, setPlayerName] = useState('');
   const [workflowIds, setWorkflowIds] = useState([]);
   const [gameStarted, setGameStarted] = useState(false);
@@ -35,6 +35,7 @@ const AIWorkflowGame = () => {
   const [isCorrect, setIsCorrect] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [timer, setTimer] = useState(300);
+
   useEffect(() => {
     let interval;
     if (gameStarted) {
@@ -50,12 +51,6 @@ const AIWorkflowGame = () => {
       setGameStarted(true);
     }
   };
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimer((prevTimer) => (prevTimer > 0 ? prevTimer - 1 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   const onDragEnd = useCallback((result) => {
     const { source, destination, draggableId } = result;
@@ -110,6 +105,7 @@ const AIWorkflowGame = () => {
     setIsCorrect(false);
     setShowResult(false);
     setTimer(300);
+    setGameStarted(false);
   }, []);
 
   const renderDraggable = useCallback((id, index, isDragging) => {
@@ -137,7 +133,7 @@ const AIWorkflowGame = () => {
       <div className="p-4 max-w-md mx-auto" style={{ backgroundColor: mongoColors.gray }}>
         <Card style={{ backgroundColor: 'white' }}>
           <CardHeader style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>
-            <h1 className="text-2xl font-bold text-center">MongoDB/AWS - AI Workflow Game</h1>
+            <h1 className="text-2xl font-bold text-center">AI Workflow Game</h1>
           </CardHeader>
           <CardContent>
             <div className="mb-4">
@@ -174,40 +170,44 @@ const AIWorkflowGame = () => {
       <Card>
         <CardHeader style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>
           <h1 className="text-2xl font-bold text-center">AI Workflow Game</h1>
+          <p className="text-center">Player: {playerName}</p>
           <p className="text-center">Time remaining: {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}</p>
         </CardHeader>
         <CardContent>
-          <DragDropContext onDragEnd={onDragEnd}>
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold mb-2">Your Workflow</h2>
-              <Droppable droppableId="workflow">
-                {(provided) => (
-                  <div {...provided.droppableProps} ref={provided.innerRef} className="min-h-[100px] bg-gray-100 p-2 rounded"  style={{ backgroundColor: mongoColors.lightBlue }}>
-                    {workflowIds.map((id, index) => renderDraggable(id, index, false))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold mb-2" style={{ color: mongoColors.darkBlue }}>Available Services</h2>
-              <Droppable droppableId="availableServices">
-                {(provided) => (
-                  <div {...provided.droppableProps} ref={provided.innerRef} className="bg-gray-100 p-2 rounded">
-                    {availableIds.map((id, index) => renderDraggable(id, index, workflowIds.includes(id)))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </div>
-          </DragDropContext>
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold mb-2" style={{ color: mongoColors.darkBlue }}>Your Workflow</h2>
+            <Droppable droppableId="workflow">
+              {(provided) => (
+                <div {...provided.droppableProps} ref={provided.innerRef} className="min-h-[100px] p-2 rounded" style={{ backgroundColor: mongoColors.lightBlue }}>
+                  {workflowIds.map((id, index) => renderDraggable(id, index, false))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold mb-2" style={{ color: mongoColors.darkBlue }}>Available Services</h2>
+            <Droppable droppableId="availableServices">
+              {(provided) => (
+                <div {...provided.droppableProps} ref={provided.innerRef} className="p-2 rounded" style={{ backgroundColor: mongoColors.lightBlue }}>
+                  {availableIds.map((id, index) => renderDraggable(id, index, false))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </div>
+        </DragDropContext>  
         </CardContent>
         <CardFooter className="flex justify-center">
           <Button onClick={checkWorkflow} className="bg-blue-500 text-white px-4 py-2 rounded mr-2" style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>
             Submit Workflow
           </Button>
-          <Button onClick={resetGame} className="bg-gray-500 text-white px-4 py-2 rounded"style={{ backgroundColor: mongoColors.darkBlue, color: 'white' }}>
+          <Button onClick={resetGame} className="bg-gray-500 text-white px-4 py-2 rounded mr-2" style={{ backgroundColor: mongoColors.darkBlue, color: 'white' }}>
             Reset Game
+          </Button>
+          <Button onClick={onReturnToMainMenu} className="bg-gray-500 text-white px-4 py-2 rounded" style={{ backgroundColor: mongoColors.lightBlue, color: mongoColors.darkBlue }}>
+            Main Menu
           </Button>
         </CardFooter>
       </Card>

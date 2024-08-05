@@ -1,0 +1,15 @@
+{
+  "providers": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-aiworkflowgame-dev-011bc-authRole",
+      "UnauthRoleArn": "arn:aws:iam::089515293895:role/amplify-aiworkflowgame-dev-011bc-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::089515293895:role/amplify-aiworkflowgame-dev-011bc-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-aiworkflowgame-dev-011bc-deployment",
+      "UnauthRoleName": "amplify-aiworkflowgame-dev-011bc-unauthRole",
+      "StackName": "amplify-aiworkflowgame-dev-011bc",
+      "StackId": "arn:aws:cloudformation:us-east-1:089515293895:stack/amplify-aiworkflowgame-dev-011bc/c8da9e20-5359-11ef-8693-0e45891c840f",
+      "AmplifyAppId": "d1fueswraai8k7"
+    }
+  }
+}
