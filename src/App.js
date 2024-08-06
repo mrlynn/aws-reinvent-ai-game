@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import MainMenu from './MainMenu';
 import AIWorkflowGame from './AIWorkflowGame';
 import VectorSearchGame from './VectorSearchGame';
+import TimeSeriesPredictionGame from './TimeSeriesPredictionGame';
 
 const App = () => {
   const [currentGame, setCurrentGame] = useState(null);
@@ -12,6 +13,10 @@ const App = () => {
 
   const startVectorSearchGame = () => {
     setCurrentGame('vectorGame');
+  };
+  
+  const startTimeSeriesPredictionGame = () => {
+    setCurrentGame('timeSeriesPredictionGame');
   };
 
   const returnToMainMenu = () => {
@@ -24,6 +29,7 @@ const App = () => {
         <MainMenu 
           onStartAIWorkflowGame={startAIWorkflowGame} 
           onStartVectorSearchGame={startVectorSearchGame}
+          onStartTimeSeriesPredictionGame={startTimeSeriesPredictionGame}
         />
       )}
       {currentGame === 'aiWorkflow' && (
@@ -31,6 +37,9 @@ const App = () => {
       )}
       {currentGame === 'vectorGame' && (
         <VectorSearchGame onReturnToMainMenu={returnToMainMenu} />
+      )}
+      {currentGame === 'timeSeriesPredictionGame' && (
+        <TimeSeriesPredictionGame onReturnToMainMenu={returnToMainMenu} />
       )}
     </div>
   );

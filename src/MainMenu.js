@@ -9,7 +9,7 @@ const mongoColors = {
   gray: '#E8EDEB',
 };
 
-const MainMenu = ({ onStartAIWorkflowGame, onStartVectorSearchGame }) => {
+const MainMenu = ({ onStartAIWorkflowGame, onStartVectorSearchGame, onStartTimeSeriesPredictionGame }) => {
   return (
     <div className="p-4 max-w-md mx-auto" style={{ backgroundColor: mongoColors.gray, minHeight: '100vh' }}>
       <Card style={{ backgroundColor: 'white' }}>
@@ -35,6 +35,13 @@ const MainMenu = ({ onStartAIWorkflowGame, onStartVectorSearchGame }) => {
               style={{ backgroundColor: mongoColors.darkBlue, color: 'white' }}
             >
               Vector Search Game
+            </Button>
+            <Button
+              onClick={onStartTimeSeriesPredictionGame}
+              className="px-4 py-2 mb-2 w-full"
+              style={{ backgroundColor: mongoColors.darkBlue, color: 'white' }}
+            >
+              Time Series Game
             </Button>
           </div>
         </CardContent>
