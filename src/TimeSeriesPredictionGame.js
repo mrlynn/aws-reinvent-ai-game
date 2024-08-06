@@ -11,16 +11,18 @@ const mongoColors = {
     gray: '#E8EDEB',
   };
 
-const TrendPredictionGame = ({ onReturnToMainMenu }) => {
+const AdvancedTimeSeriesGame = ({ onReturnToMainMenu }) => {
   const [playerName, setPlayerName] = useState('');
   const [gameStarted, setGameStarted] = useState(false);
   const [currentSeries, setCurrentSeries] = useState([]);
   const [score, setScore] = useState(0);
-  const [streak, setStreak] = useState(0);
   const [prediction, setPrediction] = useState(null);
   const [lastPredictionCorrect, setLastPredictionCorrect] = useState(null);
   const [showDataStructure, setShowDataStructure] = useState(false);
-  const MAX_POINTS = 50;
+  const [queryPerformance, setQueryPerformance] = useState({ timeSeries: 0, regular: 0 });
+  const [aggregationResult, setAggregationResult] = useState(null);
+  const [selectedTimeRange, setSelectedTimeRange] = useState('1h');
+  const MAX_POINTS = 3600; // Store 1 hour of data points (1 per second)
 
   const generateDataPoint = useCallback(() => {
     const now = new Date();
@@ -29,7 +31,11 @@ const TrendPredictionGame = ({ onReturnToMainMenu }) => {
     const newValue = Math.max(0, Math.min(100, lastValue + (Math.random() < trend ? 1 : -1) * Math.random() * 5));
     return {
       timestamp: now.toISOString(),
-      value: Math.round(newValue * 100) / 100
+      value: Math.round(newValue * 100) / 100,
+      metadata: {
+        sensorId: 'sensor1',
+        location: 'datacenter1'
+      }
     };
   }, [currentSeries, prediction]);
 
@@ -40,19 +46,17 @@ const TrendPredictionGame = ({ onReturnToMainMenu }) => {
           const newPoint = generateDataPoint();
           const newSeries = [...prev, newPoint].slice(-MAX_POINTS);
           
-          // Check if prediction was correct
           if (prediction !== null && prev.length > 0) {
             const isCorrect = (prediction === 'up' && newPoint.value > prev[prev.length - 1].value) ||
                               (prediction === 'down' && newPoint.value < prev[prev.length - 1].value);
             setLastPredictionCorrect(isCorrect);
             setScore(prevScore => prevScore + (isCorrect ? 1 : 0));
-            setStreak(prevStreak => isCorrect ? prevStreak + 1 : 0);
           }
           
           return newSeries;
         });
         setPrediction(null);
-      }, 1000);  // Generate a new point every second
+      }, 1000);
       return () => clearInterval(interval);
     }
   }, [gameStarted, generateDataPoint, prediction]);
@@ -60,7 +64,6 @@ const TrendPredictionGame = ({ onReturnToMainMenu }) => {
   const startGame = () => {
     setGameStarted(true);
     setScore(0);
-    setStreak(0);
     setCurrentSeries([]);
   };
 
@@ -71,6 +74,45 @@ const TrendPredictionGame = ({ onReturnToMainMenu }) => {
   const formatXAxis = (tickItem) => {
     const date = new Date(tickItem);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  };
+
+  const simulateQuery = () => {
+    const start = performance.now();
+    // Simulate time series query
+    const tsResult = currentSeries.filter(point => 
+      new Date(point.timestamp) > new Date(Date.now() - 3600000)
+    );
+    const tsEnd = performance.now();
+
+    // Simulate regular collection query
+    const regStart = performance.now();
+    const regResult = currentSeries.filter(point => 
+      new Date(point.timestamp) > new Date(Date.now() - 3600000)
+    );
+    const regEnd = performance.now();
+
+    setQueryPerformance({
+      timeSeries: tsEnd - start,
+      regular: regEnd - regStart
+    });
+  };
+
+  const performAggregation = () => {
+    const timeRanges = {
+      '1h': 3600000,
+      '30m': 1800000,
+      '15m': 900000
+    };
+    const range = timeRanges[selectedTimeRange];
+    const filtered = currentSeries.filter(point => 
+      new Date(point.timestamp) > new Date(Date.now() - range)
+    );
+    const result = {
+      avg: filtered.reduce((sum, point) => sum + point.value, 0) / filtered.length,
+      min: Math.min(...filtered.map(point => point.value)),
+      max: Math.max(...filtered.map(point => point.value))
+    };
+    setAggregationResult(result);
   };
 
   const renderDataStructure = () => (
@@ -92,9 +134,9 @@ const TrendPredictionGame = ({ onReturnToMainMenu }) => {
           timeField: "timestamp",
           metaField: "metadata",
           granularity: "seconds",
-          expireAfterSeconds: 86400, // Optional: data expires after 24 hours
-          bucketMaxSpanSeconds: 3600, // Optional: maximum time range for a bucket
-          bucketRoundingSeconds: 3600, // Optional: rounds bucket boundaries to the nearest hour
+          expireAfterSeconds: 86400,
+          bucketMaxSpanSeconds: 3600,
+          bucketRoundingSeconds: 3600,
         }, null, 2)}
       </pre>
   
@@ -108,6 +150,18 @@ const TrendPredictionGame = ({ onReturnToMainMenu }) => {
         It automatically creates and manages buckets of documents based on the time field,
         allowing for efficient range queries and aggregations.
       </p>
+  
+      <div className="mt-4 flex justify-center">
+        <Button
+          onClick={() => window.open('https://www.mongodb.com/docs/manual/core/timeseries-collections/', '_blank', 'noopener,noreferrer')}
+          className="px-4 py-2 rounded flex items-center"
+          style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}
+        >
+          Learn More About MongoDB Time Series Collections
+          {/* If you're using an icon library, you can add an icon here */}
+          {/* <FaExternalLinkAlt className="ml-2" /> */}
+        </Button>
+      </div>
     </div>
   );
 
@@ -115,19 +169,14 @@ const TrendPredictionGame = ({ onReturnToMainMenu }) => {
     <div className="p-4 max-w-md mx-auto" style={{ backgroundColor: mongoColors.gray }}>
       <Card>
         <CardHeader style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>
-          <h1 className="text-2xl font-bold text-center">MongoDB Real-Time Trend Prediction</h1>
-          {gameStarted && (
-            <>
-              <p className="text-center">Player: {playerName}</p>
-              <p className="text-center">Score: {score} | Streak: {streak}</p>
-            </>
-          )}
+          <h1 className="text-2xl font-bold text-center">Advanced MongoDB Time Series Game</h1>
+          {gameStarted && <p className="text-center">Player: {playerName} | Score: {score}</p>}
         </CardHeader>
         <CardContent>
           {!gameStarted ? (
             <>
               <p className="text-center mb-4" style={{ color: mongoColors.darkBlue }}>
-                Predict real-time trends in MongoDB time series data!
+                Explore MongoDB's Time Series capabilities!
               </p>
               <input
                 type="text"
@@ -142,13 +191,10 @@ const TrendPredictionGame = ({ onReturnToMainMenu }) => {
             <>
               <div className="mb-4">
                 <ResponsiveContainer width="100%" height={200}>
-                  <LineChart data={currentSeries}>
+                  <LineChart data={currentSeries.slice(-60)}>
                     <XAxis dataKey="timestamp" tickFormatter={formatXAxis} />
                     <YAxis domain={[0, 100]} />
-                    <Tooltip 
-                      labelFormatter={(label) => new Date(label).toLocaleString()} 
-                      formatter={(value) => [value, "Value"]}
-                    />
+                    <Tooltip labelFormatter={(label) => new Date(label).toLocaleString()} />
                     <Line type="monotone" dataKey="value" stroke={mongoColors.darkBlue} dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
@@ -171,6 +217,34 @@ const TrendPredictionGame = ({ onReturnToMainMenu }) => {
                 {lastPredictionCorrect !== null && (
                   <p className="text-center mt-4" style={{ color: lastPredictionCorrect ? 'green' : 'red' }}>
                     {lastPredictionCorrect ? 'Correct!' : 'Incorrect!'}
+                  </p>
+                )}
+              </div>
+              <div className="mt-4">
+                <Button onClick={simulateQuery} className="mr-2">Simulate Query</Button>
+                {queryPerformance.timeSeries > 0 && (
+                  <p>
+                    Time Series: {queryPerformance.timeSeries.toFixed(2)}ms | 
+                    Regular: {queryPerformance.regular.toFixed(2)}ms
+                  </p>
+                )}
+              </div>
+              <div className="mt-4">
+                <select 
+                  value={selectedTimeRange} 
+                  onChange={(e) => setSelectedTimeRange(e.target.value)}
+                  className="mr-2"
+                >
+                  <option value="1h">Last 1 hour</option>
+                  <option value="30m">Last 30 minutes</option>
+                  <option value="15m">Last 15 minutes</option>
+                </select>
+                <Button onClick={performAggregation}>Aggregate Data</Button>
+                {aggregationResult && (
+                  <p>
+                    Avg: {aggregationResult.avg.toFixed(2)} | 
+                    Min: {aggregationResult.min.toFixed(2)} | 
+                    Max: {aggregationResult.max.toFixed(2)}
                   </p>
                 )}
               </div>
@@ -210,4 +284,4 @@ const TrendPredictionGame = ({ onReturnToMainMenu }) => {
   );
 };
 
-export default TrendPredictionGame;
+export default AdvancedTimeSeriesGame;
