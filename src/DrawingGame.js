@@ -121,38 +121,30 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
       console.error('No current prompt available');
       return;
     }
-
+  
     const canvas = canvasRef.current;
     const imageData = canvas.toDataURL('image/png');
-
-    const byteString = atob(imageData.split(',')[1]);
-    const mimeString = imageData.split(',')[0].split(':')[1].split(';')[0];
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
-    }
-    const blob = new Blob([ab], { type: mimeString });
-
-    const formData = new FormData();
-    formData.append('drawing', blob, 'drawing.png');
-    formData.append('promptId', currentPrompt.promptId);
-
+  
     try {
       setLoading(true);
-      const response = await axios.post('https://aws-reinvent-game-server.vercel.app/api/checkDrawing', formData, {
+      console.log('Submitting drawing...');
+      const response = await axios.post('https://aws-reinvent-game-server.vercel.app/api/checkDrawing', {
+        promptId: currentPrompt.promptId,
+        drawing: imageData
+      }, {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'application/json'
         }
       });
+      console.log('Received response:', response.data);
       setLoading(false);
-
+  
       setScore(prev => Math.min(prev + response.data.score, MAX_SCORE));
       setFeedback(response.data);
       setShowResult(true);
     } catch (error) {
       setLoading(false);
-      console.error('Error submitting drawing:', error);
+      console.error('Error submitting drawing:', error.response ? error.response.data : error.message);
     }
   };
 
