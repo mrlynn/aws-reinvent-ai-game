@@ -52,7 +52,7 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
   const nextRound = useCallback(async () => {
     try {
       console.log('Fetching new prompt...');
-      const response = await axios.get('http://localhost:5001/api/getRandomPrompt');
+      const response = await axios.get('https://aws-reinvent-game-server.vercel.app/api/getRandomPrompt');
       console.log('Received response:', response);
       console.log('Response data:', response.data);
 
@@ -140,7 +140,7 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
 
     try {
       setLoading(true);
-      const response = await axios.post('http://localhost:5001/api/checkDrawing', formData, {
+      const response = await axios.post('https://aws-reinvent-game-server.vercel.app/api/checkDrawing', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
