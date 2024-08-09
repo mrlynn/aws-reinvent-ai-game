@@ -23,7 +23,7 @@ const App = () => {
           onStartTimeSeriesPredictionGame={() => setCurrentGame('timeSeries')}
           onStartTriggerGame={() => setCurrentGame('trigger')}
           onStartAtlasTreasureHunt={() => setCurrentGame('atlasTreasureHunt')}
-          onStartDrawingGame={() => setCurrentGame('drawingGame')}  // Add this line
+          onStartDrawingGame={() => setCurrentGame('drawingGame')} 
         />
       )}
       {currentGame === 'aiWorkflow' && <AIWorkflowGame onReturnToMainMenu={returnToMainMenu} />}
@@ -31,7 +31,7 @@ const App = () => {
       {currentGame === 'timeSeries' && <TimeSeriesPredictionGame onReturnToMainMenu={returnToMainMenu} />}
       {currentGame === 'trigger' && <TriggerGame onReturnToMainMenu={returnToMainMenu} />}
       {currentGame === 'atlasTreasureHunt' && <AtlasTreasureHunt onReturnToMainMenu={returnToMainMenu} />}
-      {currentGame === 'drawingGame' && <DrawingGame onReturnToMainMenu={returnToMainMenu} />}  // Add this line
+      {currentGame === 'drawingGame' && <DrawingGame onReturnToMainMenu={returnToMainMenu} />} 
     </div>
   );
 };
