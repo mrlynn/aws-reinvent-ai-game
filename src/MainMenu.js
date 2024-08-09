@@ -9,7 +9,7 @@ const mongoColors = {
   gray: '#E8EDEB',
 };
 
-const MainMenu = ({ onStartAIWorkflowGame, onStartVectorSearchGame, onStartTimeSeriesPredictionGame }) => {
+const MainMenu = ({ onStartAIWorkflowGame, onStartVectorSearchGame, onStartTimeSeriesPredictionGame, onStartAtlasTreasureHunt, onStartDrawingGame }) => {
   return (
     <div className="p-4 max-w-md mx-auto" style={{ backgroundColor: mongoColors.gray, minHeight: '100vh' }}>
       <Card style={{ backgroundColor: 'white' }}>
@@ -28,7 +28,6 @@ const MainMenu = ({ onStartAIWorkflowGame, onStartVectorSearchGame, onStartTimeS
             >
               AI Workflow Game
             </Button>
-            {/* Add more game buttons here as they are developed */}
             <Button
               onClick={onStartVectorSearchGame}
               className="px-4 py-2 mb-2 w-full"
@@ -42,6 +41,20 @@ const MainMenu = ({ onStartAIWorkflowGame, onStartVectorSearchGame, onStartTimeS
               style={{ backgroundColor: mongoColors.darkBlue, color: 'white' }}
             >
               Time Series Game
+            </Button>
+            <Button
+              onClick={onStartAtlasTreasureHunt}
+              className="px-4 py-2 mb-2 w-full"
+              style={{ backgroundColor: mongoColors.darkBlue, color: 'white' }}
+            >
+              Atlas Treasure Hunt
+            </Button>
+            <Button
+              onClick={onStartDrawingGame}
+              className="px-4 py-2 mb-2 w-full"
+              style={{ backgroundColor: mongoColors.darkBlue, color: 'white' }}
+            >
+              Drawing Game
             </Button>
           </div>
         </CardContent>

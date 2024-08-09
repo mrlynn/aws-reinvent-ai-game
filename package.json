@@ -1,26 +1,54 @@
 {
-  "name": "ai-workflow-game",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@radix-ui/react-alert-dialog": "^1.1.1",
-    "@radix-ui/react-slot": "^1.1.0",
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "react": "^18.3.1",
-    "react-beautiful-dnd": "^13.1.1",
-    "react-dom": "^18.3.1",
-    "react-scripts": "5.0.1",
-    "recharts": "^2.12.7",
-    "tailwindcss": "^3.4.7",
-    "web-vitals": "^2.1.4"
-  },
+  "name": "mongodb-aws-game-collection",
+  "version": "1.0.0",
+  "description": "A collection of games showcasing MongoDB and AWS services",
+  "main": "src/index.js",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "server": "node server/server.js",
+    "dev": "concurrently \"npm start\" \"npm run server\"",
+    "install-server": "cd server && npm install"
+  },
+  "keywords": [
+    "mongodb",
+    "atlas",
+    "aws",
+    "game",
+    "react"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@radix-ui/react-alert-dialog": "^1.0.0",
+    "@radix-ui/react-dialog": "^1.0.0",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "autoprefixer": "^10.4.7",
+    "axios": "^0.21.4",
+    "class-variance-authority": "^0.4.0",
+    "clsx": "^1.2.1",
+    "dotenv": "^16.4.5",
+    "lucide-react": "^0.263.1",
+    "mongoose": "^8.5.2",
+    "openai": "^4.55.0",
+    "postcss": "^8.4.14",
+    "react": "^18.2.0",
+    "react-beautiful-dnd": "^13.1.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "recharts": "^2.1.9",
+    "tailwind-merge": "^1.12.0",
+    "tailwindcss": "^3.0.0",
+    "tailwindcss-animate": "^1.0.5",
+    "web-vitals": "^2.1.4"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "concurrently": "^6.2.0"
   },
   "eslintConfig": {
     "extends": [
@@ -39,8 +67,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
   }
 }

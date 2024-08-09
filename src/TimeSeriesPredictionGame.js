@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardHeader, CardFooter } from './components/ui/card';
-import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './components/ui/alert-dialog';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+
 
 const mongoColors = {
     green: '#00ED64',
@@ -79,16 +79,16 @@ const AdvancedTimeSeriesGame = ({ onReturnToMainMenu }) => {
   const simulateQuery = () => {
     const start = performance.now();
     // Simulate time series query
-    const tsResult = currentSeries.filter(point => 
-      new Date(point.timestamp) > new Date(Date.now() - 3600000)
-    );
+    // const tsResult = currentSeries.filter(point => 
+    //   new Date(point.timestamp) > new Date(Date.now() - 3600000)
+    // );
     const tsEnd = performance.now();
 
     // Simulate regular collection query
     const regStart = performance.now();
-    const regResult = currentSeries.filter(point => 
-      new Date(point.timestamp) > new Date(Date.now() - 3600000)
-    );
+    // const regResult = currentSeries.filter(point => 
+    //   new Date(point.timestamp) > new Date(Date.now() - 3600000)
+    // );
     const regEnd = performance.now();
 
     setQueryPerformance({
