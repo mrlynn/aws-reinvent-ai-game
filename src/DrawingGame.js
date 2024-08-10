@@ -167,7 +167,6 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
         });
       setFeedback(response.data);
       setShowResult(true);
-      await saveScore(newScore);
 
     } catch (error) {
       setLoading(false);
