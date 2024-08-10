@@ -9,7 +9,7 @@ const mongoColors = {
   gray: '#E8EDEB',
 };
 
-const MainMenu = ({ onStartAIWorkflowGame, onStartVectorSearchGame, onStartTimeSeriesPredictionGame, onStartAtlasTreasureHunt, onStartDrawingGame }) => {
+const MainMenu = ({ onStartAIWorkflowGame, onStartVectorSearchGame, onStartTimeSeriesPredictionGame, onStartAtlasTreasureHunt, onStartDrawingGame, onViewLeaderboard }) => {
   return (
     <div className="p-4 max-w-md mx-auto" style={{ backgroundColor: mongoColors.gray, minHeight: '100vh' }}>
       <Card style={{ backgroundColor: 'white' }}>
@@ -55,6 +55,13 @@ const MainMenu = ({ onStartAIWorkflowGame, onStartVectorSearchGame, onStartTimeS
               style={{ backgroundColor: mongoColors.darkBlue, color: 'white' }}
             >
               Drawing Game
+            </Button>
+            <Button
+              onClick={onViewLeaderboard}
+              className="px-4 py-2 mb-2 w-full"
+              style={{ backgroundColor: mongoColors.lightBlue, color: mongoColors.darkBlue }}
+            >
+              View Leaderboard
             </Button>
           </div>
         </CardContent>
