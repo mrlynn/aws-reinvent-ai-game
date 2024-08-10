@@ -108,6 +108,20 @@ const AIWorkflowGame = ({ onReturnToMainMenu }) => {
     return finalScore;
   }, [isCorrect, timer]);
 
+  const saveScore = async (finalScore) => {
+    try {
+      await axios.post('https://aws-reinvent-game-server.vercel.app/api/saveScore', {
+        playerName,
+        game: 'aiWorkflowGame',
+        score: finalScore,
+        maxScore: MAX_SCORE
+      });
+      console.log('Score saved successfully');
+    } catch (error) {
+      console.error('Error saving score:', error);
+    }
+  };
+
   const checkWorkflow = useCallback(() => {
     const workflowCorrect = JSON.stringify(workflowIds) === JSON.stringify(correctOrder);
     setIsCorrect(workflowCorrect);
@@ -125,19 +139,7 @@ const AIWorkflowGame = ({ onReturnToMainMenu }) => {
     setGameStarted(false);
   }, []);
 
-  const saveScore = async (finalScore) => {
-    try {
-      await axios.post('https://aws-reinvent-game-server.vercel.app/api/saveScore', {
-        playerName,
-        game: 'aiWorkflowGame',
-        score: finalScore,
-        maxScore: MAX_SCORE
-      });
-      console.log('Score saved successfully');
-    } catch (error) {
-      console.error('Error saving score:', error);
-    }
-  };
+
 
   const renderDraggable = useCallback((id, index, isDragging) => {
     const item = allServices.find(service => service.id === id);
