@@ -269,39 +269,37 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
       </Button>
 
       <AlertDialog open={showResult} onOpenChange={setShowResult}>
-        <AlertDialogContent style={{ backgroundColor: 'white', color: mongoColors.darkBlue }}>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Result</AlertDialogTitle>
-            <AlertDialogDescription>
-              {feedback && (
-                <>
-                  <p>Your score this round: {feedback.score}</p>
-                  <p>Prompt: "{feedback.promptText}"</p>
-                  <p>Answer: "{feedback.promptName}"</p>
-                  <p>AI Explanation: {feedback.explanation}</p>
-                  {feedback.vectorSearchResults && (
-                    <p>Vector Search Results: {JSON.stringify(feedback.vectorSearchResults, null, 2)}</p>
-                    )}
-                </>
-              )}
-              <p>Your total score is {score}/{MAX_SCORE}!</p>
-              {round < ROUNDS ? "Get ready for the next round!" : `Game Over! Your final score is ${score}/${MAX_SCORE}`}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => {
-              setShowResult(false);
-              if (round < ROUNDS) nextRound();
-              else resetGame();
-            }} style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>
-              {round < ROUNDS ? "Next Round" : "Play Again"}
-            </AlertDialogAction>
-            <AlertDialogAction onClick={onReturnToMainMenu} style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>
-              Return to Main Menu
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+  <AlertDialogContent style={{ backgroundColor: 'white', color: mongoColors.darkBlue }}>
+    <AlertDialogHeader>
+      <AlertDialogTitle>Result</AlertDialogTitle>
+      <AlertDialogDescription>
+        {feedback && (
+          <>
+            <p>Your score this round: {feedback.score}</p>
+            <p>Prompt: "{feedback.promptText}"</p>
+            <p>Answer: "{feedback.promptName}"</p>
+            <p>Similarity: {(feedback.similarity * 100).toFixed(2)}%</p>
+            <p>AI Explanation: {feedback.explanation}</p>
+          </>
+        )}
+        <p>Your total score is {score}/{MAX_SCORE}!</p>
+        {round < ROUNDS ? "Get ready for the next round!" : `Game Over! Your final score is ${score}/${MAX_SCORE}`}
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogAction onClick={() => {
+        setShowResult(false);
+        if (round < ROUNDS) nextRound();
+        else resetGame();
+      }} style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>
+        {round < ROUNDS ? "Next Round" : "Play Again"}
+      </AlertDialogAction>
+      <AlertDialogAction onClick={onReturnToMainMenu} style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>
+        Return to Main Menu
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
     </div>
   );
 };
