@@ -117,6 +117,25 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
     ctxRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
   }, []);
 
+  const saveGameResult = async (roundScore, feedback) => {
+    try {
+      await axios.post('https://aws-reinvent-game-server.vercel.app/api/saveGameResult', {
+        playerName,
+        score: roundScore,
+        imageBlob: canvasRef.current.toDataURL(),
+        prompt: {
+          id: currentPrompt.promptId,
+          name: currentPrompt.text,
+          description: currentPrompt.description
+        },
+        labels: feedback.detectedLabels,
+        similarity: feedback.similarity
+      });
+    } catch (error) {
+      console.error('Error saving game result:', error);
+    }
+  };
+
   const submitDrawing = async () => {
     if (!currentPrompt) {
       console.error('No current prompt available');
@@ -140,7 +159,11 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
       console.log('Received response:', response.data);
       setLoading(false);
   
-      setScore(prev => Math.min(prev + response.data.score, MAX_SCORE));
+      setScore(prev => {
+        const newScore = Math.min(prev + response.data.score, MAX_SCORE);
+        saveGameResult(response.data.score, response.data);
+        return newScore;
+      });
       setFeedback(response.data);
       setShowResult(true);
     } catch (error) {
