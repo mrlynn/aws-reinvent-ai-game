@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardHeader } from './components/ui/card';
 import { Input } from './components/ui/input';
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './components/ui/alert-dialog';
 
 const mongoColors = {
   green: '#00ED64',
@@ -19,17 +20,26 @@ const AITreasureHuntGame = ({ onReturnToMainMenu }) => {
   const [aiCluesRemaining, setAiCluesRemaining] = useState(3);
   const [playerAnswer, setPlayerAnswer] = useState('');
   const [score, setScore] = useState(0);
+  const [round, setRound] = useState(0);
   const [leaderboard, setLeaderboard] = useState([]);
   const [events, setEvents] = useState([]);
-  const [timeRemaining, setTimeRemaining] = useState(600);
+  const [timeRemaining, setTimeRemaining] = useState(300); // 5 minutes per round
   const [gameStarted, setGameStarted] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  const [roundScore, setRoundScore] = useState(0);
+  const [gameOver, setGameOver] = useState(false);
+
+  const MAX_SCORE_PER_ROUND = 100;
+  const TOTAL_ROUNDS = 5;
 
   const startGame = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await axios.post('http://localhost:5000/api/startGame', { playerName });
+      const response = await axios.post('https://aws-reinvent-game-server.vercel.app/api/startTreasureHunt', { playerName });
       console.log(response.data.message);
       setGameStarted(true);
+      setScore(0);
+      setRound(1);
       setIsLoading(false);
       getNewClue();
     } catch (error) {
@@ -42,9 +52,10 @@ const AITreasureHuntGame = ({ onReturnToMainMenu }) => {
   const getNewClue = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get('http://localhost:5000/api/getClue');
+      const response = await axios.get('https://aws-reinvent-game-server.vercel.app/api/getTreasureClue');
       console.log('New clue:', response.data.clue);
       setCurrentClue(response.data.clue);
+      setTimeRemaining(300); // Reset timer for new round
       setIsLoading(false);
     } catch (error) {
       console.error('Failed to get clue:', error);
@@ -53,82 +64,61 @@ const AITreasureHuntGame = ({ onReturnToMainMenu }) => {
     }
   }, []);
 
-  const generateAIClue = useCallback(async () => {
-    if (aiCluesRemaining <= 0) {
-      addEvent("No more AI clues remaining!");
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await axios.get('http://localhost:5000/api/generateAIClue');
-      console.log('Generated AI Clue:', response.data.clue);
-      setCurrentClue(response.data.clue);
-      setAiCluesRemaining(prev => prev - 1);
-      addEvent("An AI-generated clue has appeared!");
-    } catch (error) {
-      setError('Failed to generate AI clue. Please try again.');
-      console.error('Failed to generate AI clue:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [aiCluesRemaining]);
-
-  const useVectorSearchHint = useCallback(async () => {
-    if (!currentClue) return;
-
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await axios.get(`http://localhost:5000/api/getVectorSearchHint?clueId=${currentClue.id}`);
-      console.log('Vector Search Hint:', response.data.hint);
-      addEvent(`Vector Search hint: ${response.data.hint}`);
-    } catch (error) {
-      setError('Failed to get vector search hint. Please try again.');
-      console.error('Failed to get vector search hint:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentClue]);
-
   const submitAnswer = useCallback(async () => {
     if (!currentClue || !playerAnswer.trim()) return;
 
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.post('http://localhost:5000/api/submitAnswer', {
+      const response = await axios.post('https://aws-reinvent-game-server.vercel.app/api/submitTreasureAnswer', {
         clueId: currentClue.id,
         answer: playerAnswer
       });
       console.log('Answer submission result:', response.data);
-      if (response.data.correct) {
-        setScore(prevScore => prevScore + response.data.points);
-        addEvent(`Correct answer! You earned ${response.data.points} points.`);
-        getNewClue();
-      } else {
-        addEvent("Incorrect answer. Try again!");
+      setRoundScore(response.data.score);
+      setScore(prevScore => prevScore + response.data.score);
+      setShowResult(true);
+      
+      if (round === TOTAL_ROUNDS) {
+        setGameOver(true);
+        await saveScore(score + response.data.score);
       }
-      setPlayerAnswer('');
     } catch (error) {
       setError('Failed to submit answer. Please try again.');
       console.error('Failed to submit answer:', error);
     } finally {
       setIsLoading(false);
+      setPlayerAnswer('');
     }
-  }, [currentClue, playerAnswer, getNewClue]);
+  }, [currentClue, playerAnswer, round, score]);
 
-  const addEvent = (event) => {
-    const time = new Date().toLocaleTimeString();
-    setEvents(prevEvents => [...prevEvents, { time, text: event }]);
+  const saveScore = async (finalScore) => {
+    try {
+      await axios.post('https://aws-reinvent-game-server.vercel.app/api/saveScore', {
+        playerName,
+        game: 'atlasTreasureHunt',
+        score: finalScore,
+        maxScore: MAX_SCORE_PER_ROUND * TOTAL_ROUNDS
+      });
+      console.log('Score saved successfully');
+    } catch (error) {
+      console.error('Error saving score:', error);
+    }
   };
+
+  const nextRound = useCallback(() => {
+    if (round < TOTAL_ROUNDS) {
+      setRound(prevRound => prevRound + 1);
+      getNewClue();
+    } else {
+      setGameOver(true);
+    }
+  }, [round, TOTAL_ROUNDS, getNewClue]);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/leaderboard');
-        console.log('Leaderboard:', response.data);
+        const response = await axios.get('https://aws-reinvent-game-server.vercel.app/api/leaderboard/atlasTreasureHunt');
         setLeaderboard(response.data);
       } catch (error) {
         console.error('Failed to fetch leaderboard:', error);
@@ -136,11 +126,12 @@ const AITreasureHuntGame = ({ onReturnToMainMenu }) => {
     };
 
     if (gameStarted) {
-      const leaderboardInterval = setInterval(fetchLeaderboard, 5000);
+      const leaderboardInterval = setInterval(fetchLeaderboard, 30000);
       const timerInterval = setInterval(() => {
         setTimeRemaining(prev => {
           if (prev <= 0) {
             clearInterval(timerInterval);
+            submitAnswer(); // Auto-submit when time runs out
             return 0;
           }
           return prev - 1;
@@ -152,7 +143,7 @@ const AITreasureHuntGame = ({ onReturnToMainMenu }) => {
         clearInterval(timerInterval);
       };
     }
-  }, [gameStarted]);
+  }, [gameStarted, submitAnswer]);
 
   if (!gameStarted) {
     return (
@@ -176,7 +167,7 @@ const AITreasureHuntGame = ({ onReturnToMainMenu }) => {
               className="w-full"
               style={{ backgroundColor: mongoColors.darkBlue, color: 'white' }}
             >
-              {isLoading ? 'Starting...' : 'Join the Hunt'}
+              {isLoading ? 'Starting...' : 'Start Treasure Hunt'}
             </Button>
             {error && <p className="text-red-500 mt-2">{error}</p>}
           </CardContent>
@@ -189,9 +180,10 @@ const AITreasureHuntGame = ({ onReturnToMainMenu }) => {
     <div className="p-4 max-w-md mx-auto" style={{ backgroundColor: mongoColors.gray, minHeight: '100vh' }}>
       <Card style={{ backgroundColor: 'white', marginBottom: '1rem' }}>
         <CardHeader style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>
-          <h2 className="text-xl font-bold">Current Clue</h2>
-          <p>Time Remaining: {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}</p>
-          <p>Score: {score}</p>
+          <h2 className="text-xl font-bold">Atlas Treasure Hunt</h2>
+          <p>Player: {playerName}</p>
+          <p>Score: {score}/{MAX_SCORE_PER_ROUND * TOTAL_ROUNDS} | Round: {round}/{TOTAL_ROUNDS}</p>
+          <p>Time remaining: {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}</p>
         </CardHeader>
         <CardContent>
           <p className="mb-4" style={{ color: mongoColors.darkBlue }}>
@@ -205,32 +197,13 @@ const AITreasureHuntGame = ({ onReturnToMainMenu }) => {
             className="mb-4"
             style={{ borderColor: mongoColors.darkBlue }}
           />
-          <div className="flex flex-col sm:flex-row justify-between gap-2">
-            <Button 
-              onClick={submitAnswer} 
-              disabled={!currentClue || isLoading}
-              style={{ backgroundColor: mongoColors.darkBlue, color: 'white' }}
-            >
-              Submit Answer
-            </Button>
-            <Button 
-              onClick={generateAIClue}
-              disabled={aiCluesRemaining <= 0 || isLoading}
-              style={{ 
-                backgroundColor: aiCluesRemaining > 0 ? mongoColors.lightBlue : mongoColors.gray, 
-                color: mongoColors.darkBlue 
-              }}
-            >
-              Generate AI Clue ({aiCluesRemaining} left)
-            </Button>
-            <Button 
-              onClick={useVectorSearchHint}
-              disabled={!currentClue || isLoading}
-              style={{ backgroundColor: mongoColors.lightBlue, color: mongoColors.darkBlue }}
-            >
-              Use Vector Search Hint
-            </Button>
-          </div>
+          <Button 
+            onClick={submitAnswer} 
+            disabled={!currentClue || isLoading}
+            style={{ backgroundColor: mongoColors.darkBlue, color: 'white' }}
+          >
+            Submit Answer
+          </Button>
           {error && <p className="text-red-500 mt-2">{error}</p>}
         </CardContent>
       </Card>
@@ -242,25 +215,10 @@ const AITreasureHuntGame = ({ onReturnToMainMenu }) => {
         <CardContent>
           {leaderboard.map((player, index) => (
             <div key={index} className="flex justify-between" style={{ color: mongoColors.darkBlue }}>
-              <span>{player.name}</span>
-              <span>{player.score}</span>
+              <span>{player.playerName}</span>
+              <span>{player.highScore}</span>
             </div>
           ))}
-        </CardContent>
-      </Card>
-      
-      <Card style={{ backgroundColor: 'white', marginBottom: '1rem' }}>
-        <CardHeader style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>
-          <h2 className="text-xl font-bold">Event Log</h2>
-        </CardHeader>
-        <CardContent>
-          <div className="h-40 overflow-y-auto">
-            {events.map((event, index) => (
-              <div key={index} className="text-sm" style={{ color: mongoColors.darkBlue }}>
-                <span className="font-bold">{event.time}:</span> {event.text}
-              </div>
-            ))}
-          </div>
         </CardContent>
       </Card>
       
@@ -271,6 +229,48 @@ const AITreasureHuntGame = ({ onReturnToMainMenu }) => {
       >
         Return to Main Menu
       </Button>
+
+      <AlertDialog open={showResult} onOpenChange={setShowResult}>
+        <AlertDialogContent style={{ backgroundColor: 'white', color: mongoColors.darkBlue }}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Round Result</AlertDialogTitle>
+            <AlertDialogDescription>
+              <p>Your score this round: {roundScore}/{MAX_SCORE_PER_ROUND}</p>
+              <p>Total score: {score}/{MAX_SCORE_PER_ROUND * TOTAL_ROUNDS}</p>
+              {round < TOTAL_ROUNDS ? "Get ready for the next round!" : `Game Over! Your final score is ${score}/${MAX_SCORE_PER_ROUND * TOTAL_ROUNDS}`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => {
+              setShowResult(false);
+              if (round < TOTAL_ROUNDS) nextRound();
+              else setGameOver(true);
+            }} style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>
+              {round < TOTAL_ROUNDS ? "Next Round" : "Finish Game"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={gameOver} onOpenChange={setGameOver}>
+        <AlertDialogContent style={{ backgroundColor: 'white', color: mongoColors.darkBlue }}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Game Over</AlertDialogTitle>
+            <AlertDialogDescription>
+              <p>Congratulations! You've completed the Atlas Treasure Hunt.</p>
+              <p>Your final score: {score}/{MAX_SCORE_PER_ROUND * TOTAL_ROUNDS}</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => {
+              setGameOver(false);
+              onReturnToMainMenu();
+            }} style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>
+              Return to Main Menu
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
