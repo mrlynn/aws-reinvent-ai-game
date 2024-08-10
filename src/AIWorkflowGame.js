@@ -100,6 +100,14 @@ const AIWorkflowGame = ({ onReturnToMainMenu }) => {
     }
   }, []);
 
+  const calculateScore = useCallback(() => {
+    const timeBonus = Math.max(0, MAX_TIME - (300 - timer)); // Time bonus
+    const correctnessScore = isCorrect ? 500 : 0; // Correctness score
+    const finalScore = Math.min(correctnessScore + timeBonus, MAX_SCORE);
+    setScore(finalScore);
+    return finalScore;
+  }, [isCorrect, timer]);
+
   const checkWorkflow = useCallback(() => {
     const workflowCorrect = JSON.stringify(workflowIds) === JSON.stringify(correctOrder);
     setIsCorrect(workflowCorrect);
@@ -116,14 +124,6 @@ const AIWorkflowGame = ({ onReturnToMainMenu }) => {
     setTimer(300);
     setGameStarted(false);
   }, []);
-
-  const calculateScore = useCallback(() => {
-    const timeBonus = Math.max(0, MAX_TIME - (300 - timer)); // Time bonus
-    const correctnessScore = isCorrect ? 500 : 0; // Correctness score
-    const finalScore = Math.min(correctnessScore + timeBonus, MAX_SCORE);
-    setScore(finalScore);
-    return finalScore;
-  }, [isCorrect, timer]);
 
   const saveScore = async (finalScore) => {
     try {
