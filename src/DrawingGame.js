@@ -279,6 +279,9 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
                   <p>Prompt: "{feedback.promptText}"</p>
                   <p>Answer: "{feedback.promptName}"</p>
                   <p>AI Explanation: {feedback.explanation}</p>
+                  {feedback.vectorSearchResults && (
+                    <p>Vector Search Results: {JSON.stringify(feedback.vectorSearchResults, null, 2)}</p>
+                    )}
                 </>
               )}
               <p>Your total score is {score}/{MAX_SCORE}!</p>
