@@ -176,15 +176,17 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
 
   const saveScore = async (newScore) => {
     try {
-      await axios.post('https://aws-reinvent-game-server.vercel.app/api/saveScore', {
+      const scoreData = {
         playerName,
         game: 'drawingGame',
         score: newScore,
         maxScore: MAX_SCORE
-      });
-      console.log('Score saved successfully');
+      };
+      console.log('Attempting to save score with data:', scoreData);
+      const response = await axios.post('https://aws-reinvent-game-server.vercel.app/api/saveScore', scoreData);
+      console.log('Score saved successfully. Server response:', response.data);
     } catch (error) {
-      console.error('Error saving score:', error);
+      console.error('Error saving score:', error.response ? error.response.data : error.message);
     }
   };
 
