@@ -4,6 +4,8 @@ import { Button } from './components/ui/button';
 import { Card, CardContent, CardHeader, CardFooter } from './components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './components/ui/alert-dialog';
 import { Input } from './components/ui/input';
+import axios from 'axios';
+
 
 const allServices = [
     { id: 'sagemaker', content: 'Amazon SageMaker', description: 'Build, train, and deploy machine learning models' },
@@ -35,6 +37,10 @@ const AIWorkflowGame = ({ onReturnToMainMenu }) => {
   const [isCorrect, setIsCorrect] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [timer, setTimer] = useState(300);
+  const [score, setScore] = useState(0);
+  const MAX_SCORE = 1000;
+  const MAX_TIME = 300; // 5 minutes
+
 
   useEffect(() => {
     let interval;
@@ -95,9 +101,12 @@ const AIWorkflowGame = ({ onReturnToMainMenu }) => {
   }, []);
 
   const checkWorkflow = useCallback(() => {
-    setIsCorrect(JSON.stringify(workflowIds) === JSON.stringify(correctOrder));
+    const workflowCorrect = JSON.stringify(workflowIds) === JSON.stringify(correctOrder);
+    setIsCorrect(workflowCorrect);
+    const finalScore = calculateScore();
+    saveScore(finalScore);
     setShowResult(true);
-  }, [workflowIds]);
+  }, [workflowIds, calculateScore]);
 
   const resetGame = useCallback(() => {
     setWorkflowIds([]);
@@ -107,6 +116,28 @@ const AIWorkflowGame = ({ onReturnToMainMenu }) => {
     setTimer(300);
     setGameStarted(false);
   }, []);
+
+  const calculateScore = useCallback(() => {
+    const timeBonus = Math.max(0, MAX_TIME - (300 - timer)); // Time bonus
+    const correctnessScore = isCorrect ? 500 : 0; // Correctness score
+    const finalScore = Math.min(correctnessScore + timeBonus, MAX_SCORE);
+    setScore(finalScore);
+    return finalScore;
+  }, [isCorrect, timer]);
+
+  const saveScore = async (finalScore) => {
+    try {
+      await axios.post('https://aws-reinvent-game-server.vercel.app/api/saveScore', {
+        playerName,
+        game: 'aiWorkflowGame',
+        score: finalScore,
+        maxScore: MAX_SCORE
+      });
+      console.log('Score saved successfully');
+    } catch (error) {
+      console.error('Error saving score:', error);
+    }
+  };
 
   const renderDraggable = useCallback((id, index, isDragging) => {
     const item = allServices.find(service => service.id === id);
@@ -212,21 +243,21 @@ const AIWorkflowGame = ({ onReturnToMainMenu }) => {
         </CardFooter>
       </Card>
       
-      <AlertDialog open={showResult} onOpenChange={setShowResult}>
-        <AlertDialogContent style={{ backgroundColor: 'white', color: mongoColors.darkBlue }}>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{isCorrect ? 'Congratulations!' : 'Not quite right'}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {isCorrect
-                ? "You've successfully created the correct AI workflow!"
-                : "The workflow isn't correct. Keep trying! Remember to include MongoDB Vector Search in your workflow."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setShowResult(false)}style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>Close</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+<AlertDialog open={showResult} onOpenChange={setShowResult}>
+      <AlertDialogContent style={{ backgroundColor: 'white', color: mongoColors.darkBlue }}>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{isCorrect ? 'Congratulations!' : 'Not quite right'}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {isCorrect
+              ? `You've successfully created the correct AI workflow! Your score: ${score}/${MAX_SCORE}`
+              : `The workflow isn't correct. Your score: ${score}/${MAX_SCORE}. Keep trying! Remember to include MongoDB Vector Search in your workflow.`}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogAction onClick={() => setShowResult(false)} style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>Close</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     </div>
   );
 };
