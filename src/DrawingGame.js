@@ -23,6 +23,7 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
   const [showResult, setShowResult] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
 
@@ -278,8 +279,24 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
             <p>Your score this round: {feedback.score}</p>
             <p>Prompt: "{feedback.promptText}"</p>
             <p>Answer: "{feedback.promptName}"</p>
-            <p>Similarity: {(feedback.similarity * 100).toFixed(2)}%</p>
             <p>AI Explanation: {feedback.explanation}</p>
+            <Button 
+              onClick={() => setShowDetails(!showDetails)}
+              style={{ backgroundColor: mongoColors.lightBlue, color: mongoColors.darkBlue, marginTop: '10px' }}
+            >
+              {showDetails ? 'Hide Details' : 'Show Details'}
+            </Button>
+            {showDetails && (
+              <div style={{ marginTop: '10px', padding: '10px', backgroundColor: mongoColors.gray, borderRadius: '5px' }}>
+                <h4>Vector Search Details:</h4>
+                <p>Similarity Score: {feedback.similarity.toFixed(4)}</p>
+                <p>Detected Labels: {feedback.detectedLabels.join(', ')}</p>
+                <h5>Top Match:</h5>
+                <p>Name: {feedback.vectorSearchResults[0].name}</p>
+                <p>Description: {feedback.vectorSearchResults[0].description}</p>
+                <p>Score: {feedback.vectorSearchResults[0].score.toFixed(4)}</p>
+              </div>
+            )}
           </>
         )}
         <p>Your total score is {score}/{MAX_SCORE}!</p>
@@ -289,12 +306,17 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
     <AlertDialogFooter>
       <AlertDialogAction onClick={() => {
         setShowResult(false);
+        setShowDetails(false);
         if (round < ROUNDS) nextRound();
         else resetGame();
       }} style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>
         {round < ROUNDS ? "Next Round" : "Play Again"}
       </AlertDialogAction>
-      <AlertDialogAction onClick={onReturnToMainMenu} style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>
+      <AlertDialogAction onClick={() => {
+        setShowResult(false);
+        setShowDetails(false);
+        onReturnToMainMenu();
+      }} style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>
         Return to Main Menu
       </AlertDialogAction>
     </AlertDialogFooter>
