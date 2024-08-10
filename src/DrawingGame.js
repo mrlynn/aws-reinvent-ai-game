@@ -4,6 +4,8 @@ import { Button } from './components/ui/button';
 import { Card, CardContent, CardHeader, CardFooter } from './components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './components/ui/alert-dialog';
 import { Input } from './components/ui/input';
+import Filter from 'bad-words';
+
 
 const mongoColors = {
   green: '#00ED64',
@@ -26,6 +28,8 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
   const [showDetails, setShowDetails] = useState(false);
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
+  const [errorMessage, setErrorMessage] = useState('');
+
 
   const MAX_SCORE = 500;
   const ROUNDS = 5;
@@ -44,6 +48,12 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
   }, [gameStarted]);
 
   const startGame = async () => {
+    const filter = new Filter();
+    if (filter.isProfane(playerName.trim())) {
+      setErrorMessage('Please choose an appropriate player name.');
+      return;
+    }
+
     if (playerName.trim() !== '') {
       setGameStarted(true);
       await nextRound();
@@ -187,6 +197,9 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
       console.log('Score saved successfully. Server response:', response.data);
     } catch (error) {
       console.error('Error saving score:', error.response ? error.response.data : error.message);
+      if (error.response && error.response.data.error === 'Inappropriate player name') {
+        setErrorMessage('Your score could not be saved due to an inappropriate player name.');
+      }
     }
   };
 
@@ -231,6 +244,7 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
               className="mb-4"
               style={{ borderColor: mongoColors.darkBlue }}
             />
+            {errorMessage && <p className="text-red-500 mb-2">{errorMessage}</p>}
             <Button 
               onClick={startGame} 
               disabled={!playerName.trim()}
