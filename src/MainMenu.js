@@ -33,7 +33,7 @@ const MainMenu = ({ onStartAIWorkflowGame, onStartVectorSearchGame, onStartTimeS
               className="px-4 py-2 mb-2 w-full"
               style={{ backgroundColor: mongoColors.darkBlue, color: 'white' }}
             >
-              Vector Search Game
+              Vector Search Drawing Game
             </Button>
             <Button
               onClick={onStartTimeSeriesPredictionGame}
