@@ -166,9 +166,23 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
       });
       setFeedback(response.data);
       setShowResult(true);
+      await saveScore(newScore);
+
     } catch (error) {
       setLoading(false);
       console.error('Error submitting drawing:', error.response ? error.response.data : error.message);
+    }
+  };
+
+  const saveScore = async (newScore) => {
+    try {
+      await axios.post('https://aws-reinvent-game-server.vercel.app/api/saveScore', {
+        playerName,
+        game: 'drawingGame',
+        score: newScore
+      });
+    } catch (error) {
+      console.error('Error saving score:', error);
     }
   };
 
