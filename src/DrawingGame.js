@@ -162,8 +162,9 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
       setScore(prev => {
         const newScore = Math.min(prev + response.data.score, MAX_SCORE);
         saveGameResult(response.data.score, response.data);
+        saveScore(newScore);  // Move this inside the setScore block
         return newScore;
-      });
+        });
       setFeedback(response.data);
       setShowResult(true);
       await saveScore(newScore);
