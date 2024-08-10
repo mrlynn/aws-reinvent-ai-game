@@ -25,7 +25,7 @@ const App = () => {
           onStartTriggerGame={() => setCurrentGame('trigger')}
           onStartAtlasTreasureHunt={() => setCurrentGame('atlasTreasureHunt')}
           onStartDrawingGame={() => setCurrentGame('drawingGame')}
-          onViewLeaderboard={() => setCurrentGame('leaderboard')}  // Add this line
+          onViewLeaderboard={() => setCurrentGame('leaderboard')} 
         />
       )}
       {currentGame === 'aiWorkflow' && <AIWorkflowGame onReturnToMainMenu={returnToMainMenu} />}
@@ -34,7 +34,7 @@ const App = () => {
       {currentGame === 'trigger' && <TriggerGame onReturnToMainMenu={returnToMainMenu} />}
       {currentGame === 'atlasTreasureHunt' && <AtlasTreasureHunt onReturnToMainMenu={returnToMainMenu} />}
       {currentGame === 'drawingGame' && <DrawingGame onReturnToMainMenu={returnToMainMenu} />}
-      {currentGame === 'leaderboard' && <Leaderboard onReturnToMainMenu={returnToMainMenu} />}  // Add this line
+      {currentGame === 'leaderboard' && <Leaderboard onReturnToMainMenu={returnToMainMenu} />}
     </div>
   );
 };
