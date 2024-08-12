@@ -29,7 +29,8 @@ const App = () => {
       {currentGame === 'trigger' && <TriggerGame onReturnToMainMenu={returnToMainMenu} />}
       {currentGame === 'drawingGame' && <DrawingGame onReturnToMainMenu={returnToMainMenu} />}
       {currentGame === 'leaderboard' && <Leaderboard onReturnToMainMenu={returnToMainMenu} />}
-    </div>
+      <DebugEnvironment />
+      </div>
   );
 };
 
