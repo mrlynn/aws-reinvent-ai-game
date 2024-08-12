@@ -5,6 +5,7 @@ import TimeSeriesPredictionGame from './TimeSeriesPredictionGame';
 import TriggerGame from './TriggerGame';
 import DrawingGame from './DrawingGame';
 import Leaderboard from './Leaderboard';  // Import the new Leaderboard component
+import DebugEnvironment from './DebugEnvironment';  // Adjust the import path as needed
 
 const App = () => {
   const [currentGame, setCurrentGame] = useState(null);

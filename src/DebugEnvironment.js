@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const DebugEnvironment = () => {
   const [showVariables, setShowVariables] = useState(false);
@@ -19,21 +17,17 @@ const DebugEnvironment = () => {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto mt-4">
-      <CardHeader>
-        <CardTitle>Environment Debug</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Button onClick={toggleVariables} className="mb-4">
-          {showVariables ? 'Hide' : 'Show'} Environment Variables
-        </Button>
-        {showVariables && (
-          <pre className="bg-gray-100 p-4 rounded overflow-auto max-h-60">
-            {JSON.stringify(getReactAppEnvVars(), null, 2)}
-          </pre>
-        )}
-      </CardContent>
-    </Card>
+    <div className="debug-environment" style={{ margin: '20px', padding: '20px', border: '1px solid #ccc', borderRadius: '5px' }}>
+      <h3>Environment Debug</h3>
+      <button onClick={toggleVariables} style={{ marginBottom: '10px' }}>
+        {showVariables ? 'Hide' : 'Show'} Environment Variables
+      </button>
+      {showVariables && (
+        <pre style={{ backgroundColor: '#f0f0f0', padding: '10px', borderRadius: '5px', overflow: 'auto', maxHeight: '300px' }}>
+          {JSON.stringify(getReactAppEnvVars(), null, 2)}
+        </pre>
+      )}
+    </div>
   );
 };
 
