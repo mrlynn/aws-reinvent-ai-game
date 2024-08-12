@@ -6,6 +6,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescript
 import { Input } from './components/ui/input';
 import axios from 'axios';
 
+// Define API URL based on environment
+const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+console.log("apiUrl: ", apiUrl);
 
 const allServices = [
   { id: 'sagemaker', content: 'Amazon SageMaker', description: 'Build, train, and deploy machine learning models' },
@@ -41,6 +44,7 @@ const AIWorkflowGame = ({ onReturnToMainMenu }) => {
   const MAX_SCORE = 1000;
   const MAX_TIME = 300; // 5 minutes
   const [showInstructions, setShowInstructions] = useState(false);
+  const [error, setError] = useState(null);
 
 
   useEffect(() => {
@@ -109,27 +113,29 @@ const AIWorkflowGame = ({ onReturnToMainMenu }) => {
     return finalScore;
   }, [isCorrect, timer]);
 
-  const saveScore = async (finalScore) => {
+  const saveScore = useCallback(async (finalScore) => {
     try {
-      await axios.post('https://aws-reinvent-game-server.vercel.app/api/saveScore', {
-        playerName,
-        game: 'aiWorkflowGame',
-        score: finalScore,
-        maxScore: MAX_SCORE
-      });
-      console.log('Score saved successfully');
+        setError(null);
+        const response = await axios.post(`${apiUrl}/api/saveScore`, {
+            playerName,
+            game: 'aiWorkflowGame',
+            score: finalScore,
+            maxScore: MAX_SCORE
+        });
+        console.log('Score saved successfully. Server response:', response.data);
     } catch (error) {
-      console.error('Error saving score:', error);
+        console.error('Error saving score:', error);
+        setError('Failed to save score. Please try again.');
     }
-  };
+}, [playerName, apiUrl]);
 
-  const checkWorkflow = useCallback(() => {
-    const workflowCorrect = JSON.stringify(workflowIds) === JSON.stringify(correctOrder);
-    setIsCorrect(workflowCorrect);
-    const finalScore = calculateScore();
-    saveScore(finalScore);
-    setShowResult(true);
-  }, [workflowIds, calculateScore]);
+const checkWorkflow = useCallback(() => {
+  const workflowCorrect = JSON.stringify(workflowIds) === JSON.stringify(correctOrder);
+  setIsCorrect(workflowCorrect);
+  const finalScore = calculateScore();
+  saveScore(finalScore);
+  setShowResult(true);
+}, [workflowIds, calculateScore, saveScore]);
 
   const resetGame = useCallback(() => {
     setWorkflowIds([]);

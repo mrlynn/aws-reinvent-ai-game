@@ -4,6 +4,11 @@ import { Button } from './components/ui/button';
 import { Card, CardContent, CardHeader, CardFooter } from './components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './components/ui/alert-dialog';
 
+// Define API URL based on environment
+const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+console.log("apiUrl: ", apiUrl);
+
+
 const mongoColors = {
   green: '#00ED64',
   darkBlue: '#001E2B',
@@ -46,7 +51,7 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
 
   const nextRound = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/getRandomPrompt');
+      const response = await axios.get(`${apiUrl}/api/getRandomPrompt`);
       setCurrentPrompt(response.data.prompt);
       setRound(prev => prev + 1);
       setTimer(60);
