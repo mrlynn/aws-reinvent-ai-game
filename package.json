@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "mongodb-aws-game-collection",
   "version": "1.0.0",
   "description": "A collection of games showcasing MongoDB and AWS services",
@@ -69,5 +70,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+=======
+  "dependencies": {
+    "bad-words": "^3.0.4",
+    "cors": "^2.8.5"
+>>>>>>> emergency-backup
   }
 }
