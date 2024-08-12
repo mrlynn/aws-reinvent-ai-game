@@ -8,24 +8,24 @@ import axios from 'axios';
 
 
 const allServices = [
-    { id: 'sagemaker', content: 'Amazon SageMaker', description: 'Build, train, and deploy machine learning models' },
-    { id: 'comprehend', content: 'Amazon Comprehend', description: 'Discover insights and relationships in text' },
-    { id: 'rekognition', content: 'Amazon Rekognition', description: 'Analyze image and video' },
-    { id: 'textract', content: 'Amazon Textract', description: 'Extract text and data from documents' },
-    { id: 'polly', content: 'Amazon Polly', description: 'Turn text into lifelike speech' },
-    { id: 'lex', content: 'Amazon Lex', description: 'Build conversational interfaces' },
-    { id: 'translate', content: 'Amazon Translate', description: 'Fluent translation of text' },
-    { id: 'transcribe', content: 'Amazon Transcribe', description: 'Automatic speech recognition' },
-    { id: 'mongodb-vector-search', content: 'MongoDB Vector Search', description: 'Perform similarity search on vector embeddings' },
-  ];
-  
+  { id: 'sagemaker', content: 'Amazon SageMaker', description: 'Build, train, and deploy machine learning models' },
+  { id: 'comprehend', content: 'Amazon Comprehend', description: 'Discover insights and relationships in text' },
+  { id: 'rekognition', content: 'Amazon Rekognition', description: 'Analyze image and video' },
+  { id: 'textract', content: 'Amazon Textract', description: 'Extract text and data from documents' },
+  { id: 'polly', content: 'Amazon Polly', description: 'Turn text into lifelike speech' },
+  { id: 'lex', content: 'Amazon Lex', description: 'Build conversational interfaces' },
+  { id: 'translate', content: 'Amazon Translate', description: 'Fluent translation of text' },
+  { id: 'transcribe', content: 'Amazon Transcribe', description: 'Automatic speech recognition' },
+  { id: 'mongodb-vector-search', content: 'MongoDB Vector Search', description: 'Perform similarity search on vector embeddings' },
+];
+
 // MongoDB color palette
 const mongoColors = {
-    green: '#00ED64',
-    darkBlue: '#001E2B',
-    lightBlue: '#E3FCF7',
-    gray: '#E8EDEB',
-  };
+  green: '#00ED64',
+  darkBlue: '#001E2B',
+  lightBlue: '#E3FCF7',
+  gray: '#E8EDEB',
+};
 
 const correctOrder = ['textract', 'comprehend', 'mongodb-vector-search', 'sagemaker', 'polly'];
 
@@ -40,6 +40,7 @@ const AIWorkflowGame = ({ onReturnToMainMenu }) => {
   const [score, setScore] = useState(0);
   const MAX_SCORE = 1000;
   const MAX_TIME = 300; // 5 minutes
+  const [showInstructions, setShowInstructions] = useState(false);
 
 
   useEffect(() => {
@@ -60,11 +61,11 @@ const AIWorkflowGame = ({ onReturnToMainMenu }) => {
 
   const onDragEnd = useCallback((result) => {
     const { source, destination, draggableId } = result;
-  
+
     if (!destination) {
       return;
     }
-  
+
     if (source.droppableId === destination.droppableId) {
       if (source.droppableId === 'workflow') {
         setWorkflowIds(prev => {
@@ -139,8 +140,6 @@ const AIWorkflowGame = ({ onReturnToMainMenu }) => {
     setGameStarted(false);
   }, []);
 
-
-
   const renderDraggable = useCallback((id, index, isDragging) => {
     const item = allServices.find(service => service.id === id);
     return (
@@ -151,10 +150,23 @@ const AIWorkflowGame = ({ onReturnToMainMenu }) => {
             {...provided.draggableProps}
             {...provided.dragHandleProps}
             className={`bg-white p-2 mb-2 rounded shadow ${isDragging ? 'opacity-50' : ''}
-              ${id === 'mongodb-vector-search' ? 'border-2 border-green-500' : ''}`}
+            ${id === 'mongodb-vector-search' ? 'border-2 border-green-500' : ''}`}
           >
-            <div>{item.content}</div>
-            <div className="text-sm text-gray-500">{item.description}</div>
+            <div className="flex items-center">
+              <div className="mr-2 flex-shrink-0">
+                <img
+                  src={`/images/${id}.svg`}
+                  alt={`${item.content} logo`}
+                  width={40}
+                  height={40}
+                  style={{ width: '40px', height: '40px' }}
+                />
+              </div>
+              <div>
+                <div className="font-semibold">{item.content}</div>
+                <div className="text-sm text-gray-500">{item.description}</div>
+              </div>
+            </div>
           </div>
         )}
       </Draggable>
@@ -207,30 +219,40 @@ const AIWorkflowGame = ({ onReturnToMainMenu }) => {
           <p className="text-center">Time remaining: {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}</p>
         </CardHeader>
         <CardContent>
-        <DragDropContext onDragEnd={onDragEnd}>
-          <div className="mb-4">
-            <h2 className="text-lg font-semibold mb-2" style={{ color: mongoColors.darkBlue }}>Your Workflow</h2>
-            <Droppable droppableId="workflow">
-              {(provided) => (
-                <div {...provided.droppableProps} ref={provided.innerRef} className="min-h-[100px] p-2 rounded" style={{ backgroundColor: mongoColors.lightBlue }}>
-                  {workflowIds.map((id, index) => renderDraggable(id, index, false))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
+          <div className="mb-4 text-center" style={{ color: mongoColors.darkBlue }}>
+            <p>Create an AI workflow to extract text from documents, analyze it, search for similar content, and generate a spoken summary.</p>
+            <Button
+              onClick={() => setShowInstructions(true)}
+              className="mt-2 px-4 py-2 rounded"
+              style={{ backgroundColor: mongoColors.lightBlue, color: mongoColors.darkBlue }}
+            >
+              View Instructions
+            </Button>
           </div>
-          <div>
-            <h2 className="text-lg font-semibold mb-2" style={{ color: mongoColors.darkBlue }}>Available Services</h2>
-            <Droppable droppableId="availableServices">
-              {(provided) => (
-                <div {...provided.droppableProps} ref={provided.innerRef} className="p-2 rounded" style={{ backgroundColor: mongoColors.lightBlue }}>
-                  {availableIds.map((id, index) => renderDraggable(id, index, false))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </div>
-        </DragDropContext>  
+          <DragDropContext onDragEnd={onDragEnd}>
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold mb-2" style={{ color: mongoColors.darkBlue }}>Your Workflow</h2>
+              <Droppable droppableId="workflow">
+                {(provided) => (
+                  <div {...provided.droppableProps} ref={provided.innerRef} className="min-h-[100px] p-2 rounded" style={{ backgroundColor: mongoColors.lightBlue }}>
+                    {workflowIds.map((id, index) => renderDraggable(id, index, false))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold mb-2" style={{ color: mongoColors.darkBlue }}>Available Services</h2>
+              <Droppable droppableId="availableServices">
+                {(provided) => (
+                  <div {...provided.droppableProps} ref={provided.innerRef} className="p-2 rounded" style={{ backgroundColor: mongoColors.lightBlue }}>
+                    {availableIds.map((id, index) => renderDraggable(id, index, false))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </div>
+          </DragDropContext>
         </CardContent>
         <CardFooter className="flex justify-center">
           <Button onClick={checkWorkflow} className="bg-blue-500 text-white px-4 py-2 rounded mr-2" style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>
@@ -244,22 +266,54 @@ const AIWorkflowGame = ({ onReturnToMainMenu }) => {
           </Button>
         </CardFooter>
       </Card>
-      
-<AlertDialog open={showResult} onOpenChange={setShowResult}>
-      <AlertDialogContent style={{ backgroundColor: 'white', color: mongoColors.darkBlue }}>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{isCorrect ? 'Congratulations!' : 'Not quite right'}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {isCorrect
-              ? `You've successfully created the correct AI workflow! Your score: ${score}/${MAX_SCORE}`
-              : `The workflow isn't correct. Your score: ${score}/${MAX_SCORE}. Keep trying! Remember to include MongoDB Vector Search in your workflow.`}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogAction onClick={() => setShowResult(false)} style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>Close</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+
+      <AlertDialog open={showResult} onOpenChange={setShowResult}>
+        <AlertDialogContent style={{ backgroundColor: 'white', color: mongoColors.darkBlue }}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{isCorrect ? 'Congratulations!' : 'Not quite right'}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {isCorrect
+                ? `You've successfully created the correct AI workflow! Your score: ${score}/${MAX_SCORE}`
+                : `The workflow isn't correct. Your score: ${score}/${MAX_SCORE}. Keep trying! Remember to include MongoDB Vector Search in your workflow.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowResult(false)} style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>Close</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showInstructions} onOpenChange={setShowInstructions}>
+        <AlertDialogContent style={{ backgroundColor: 'white', color: mongoColors.darkBlue, maxWidth: '90vw', width: '600px' }}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Game Instructions</AlertDialogTitle>
+            <AlertDialogDescription>
+              <p className="mb-2">Your goal is to create an AI workflow that performs the following tasks in order:</p>
+              <ol className="list-decimal list-inside mb-4">
+                <li>Extract text from documents</li>
+                <li>Analyze the extracted text for insights</li>
+                <li>Search for similar content using vector embeddings</li>
+                <li>Process the results using machine learning</li>
+                <li>Generate a spoken summary of the findings</li>
+              </ol>
+              <p className="mb-2">Drag and drop the available services to create the correct workflow. Consider each service's function and how it fits into the overall process.</p>
+              <p>Remember, the workflow should include MongoDB Vector Search for similarity searching. Good luck!</p>
+              <Button
+                onClick={() => window.open('https://www.mongodb.com/docs/atlas/atlas-search/vector-search/', '_blank')}
+                className="mt-4 w-full"
+                style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}
+            >
+                Learn More About MongoDB Vector Search
+            </Button>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowInstructions(false)} style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}>
+              Close
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

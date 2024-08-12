@@ -6,6 +6,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescript
 import { Input } from './components/ui/input';
 import Filter from 'bad-words';
 
+// Define API URL based on environment
+const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+console.log("apiUrl: ", apiUrl);
 
 const mongoColors = {
     green: '#00ED64',
@@ -30,6 +33,7 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
     const ctxRef = useRef(null);
     const [errorMessage, setErrorMessage] = useState('');
     const [gameOver, setGameOver] = useState(false);
+    const [showInfo, setShowInfo] = useState(false); // State for toggling information
 
 
     const MAX_SCORE_PER_ROUND = 100;
@@ -67,7 +71,9 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
         if (round < TOTAL_ROUNDS) {
             try {
                 console.log('Fetching new prompt...');
-                const response = await axios.get('https://aws-reinvent-game-server.vercel.app/api/getRandomPrompt');
+                console.log('API URL:', apiUrl); // Log the API URL for debugging
+
+                const response = await axios.get(`${apiUrl}/api/getRandomPrompt`);
                 console.log('Received response:', response);
                 console.log('Response data:', response.data);
 
@@ -136,7 +142,7 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
 
     const saveGameResult = async (roundScore, feedback) => {
         try {
-            await axios.post('https://aws-reinvent-game-server.vercel.app/api/saveGameResult', {
+            await axios.post(`${apiUrl}/api/saveGameResult`, {
                 playerName,
                 score: roundScore,
                 imageBlob: canvasRef.current.toDataURL(),
@@ -165,7 +171,7 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
         try {
             setLoading(true);
             console.log('Submitting drawing...');
-            const response = await axios.post('https://aws-reinvent-game-server.vercel.app/api/checkDrawing', {
+            const response = await axios.post(`${apiUrl}/api/checkDrawing`, {
                 promptId: currentPrompt.promptId,
                 drawing: imageData
             }, {
@@ -202,7 +208,7 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
                 maxScore: MAX_SCORE_PER_ROUND * TOTAL_ROUNDS
             };
             console.log('Attempting to save score with data:', scoreData);
-            const response = await axios.post('https://aws-reinvent-game-server.vercel.app/api/saveScore', scoreData);
+            const response = await axios.post(`${apiUrl}/api/saveScore`, scoreData);
             console.log('Score saved successfully. Server response:', response.data);
         } catch (error) {
             console.error('Error saving score:', error.response ? error.response.data : error.message);
@@ -237,6 +243,45 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
         setCurrentPrompt(null);
     };
 
+    const renderInfo = () => (
+        <div className="mt-4 p-4 bg-gray-100 rounded">
+            <h3 className="font-bold mb-2">How It Works:</h3>
+            <p className="text-sm" style={{ color: mongoColors.darkBlue }}>
+                This game leverages AWS Rekognition to analyze your drawings by detecting labels and identifying objects. 
+                The similarity between your drawing and the prompt is calculated using a Vector Search, which compares the embedding of the drawing labels with the embedding of the prompt name.
+            </p>
+
+            <h3 className="font-bold mt-4 mb-2">AWS Rekognition:</h3>
+            <p className="text-sm" style={{ color: mongoColors.darkBlue }}>
+                AWS Rekognition is a deep learning-based service provided by AWS that enables you to analyze images and videos. 
+                In this game, Rekognition detects labels in your drawing, which are then used to calculate how closely your drawing matches the prompt.
+            </p>
+
+            <h3 className="font-bold mt-4 mb-2">Vector Search Details:</h3>
+            <pre className="text-xs overflow-x-auto">
+                {JSON.stringify({
+                    vectorSearch: {
+                        "index": "nameEmbedding_index",
+                        "path": "nameEmbedding",
+                        "queryVector": "labelEmbedding",
+                        "numCandidates": 100,
+                        "limit": 1
+                    }
+                }, null, 2)}
+            </pre>
+            <p className="text-sm" style={{ color: mongoColors.darkBlue }}>
+                The vector search allows us to find the closest match between your drawing's detected labels and the game's prompt by comparing their embeddings.
+            </p>
+            <Button
+                onClick={() => window.open('https://www.mongodb.com/docs/atlas/atlas-search/vector-search/', '_blank')}
+                className="mt-4 w-full"
+                style={{ backgroundColor: mongoColors.green, color: mongoColors.darkBlue }}
+            >
+                Learn More About MongoDB Vector Search
+            </Button>
+        </div>
+    );
+
     if (!gameStarted) {
         return (
             <div className="p-4 max-w-md mx-auto" style={{ backgroundColor: mongoColors.gray, minHeight: '100vh' }}>
@@ -262,6 +307,7 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
                         >
                             Start Game
                         </Button>
+
                     </CardContent>
                 </Card>
             </div>
@@ -322,7 +368,17 @@ const DrawingGame = ({ onReturnToMainMenu }) => {
                         >
                             Clear Canvas
                         </Button>
+                        <Button
+                            onClick={() => setShowInfo(!showInfo)}
+                            className="mt-4 w-full"
+                            style={{ backgroundColor: mongoColors.lightBlue, color: mongoColors.darkBlue }}
+                        >
+                            {showInfo ? "Hide Information" : "Show Information"}
+                        </Button>
+
                     </div>
+                    {showInfo && renderInfo()}
+
                 </CardContent>
             </Card>
             <Button
